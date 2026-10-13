@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Day Blocks">
 <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
 <title>Day Blocks</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23B5B1AA'/%3E%3Crect x='28' y='11' width='44' height='12' fill='%23FFFFFF'/%3E%3Crect x='28' y='29' width='44' height='20' fill='%23F2661A'/%3E%3Crect x='28' y='55' width='44' height='34' fill='%231A1A18'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
-/* Layout: one quiet paper column. A slim brand bar, a date row with a weekday seal, the week strip and a
+/* Layout: one quiet paper column. A slim brand bar, a date row, the week strip and a
    one-line summary sit over a single hour grid; stats slide up from the bottom. Sumi ink, washi paper, one orange. */
 :root {
   --bg: #F7F5F0;
@@ -215,21 +216,6 @@ svg.i { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-widt
 .day-meta { display: flex; flex-direction: column; gap: 4px; padding-bottom: 2px; min-width: 0; }
 .day-name { font-size: 18px; font-weight: 500; }
 .day-month { font-size: 11px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-.seal {
-  width: 40px;
-  height: 40px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--r);
-  color: var(--accent-text);
-  font-family: var(--display);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-}
-.seal.today { background: var(--accent); color: var(--on-accent); }
 
 /* ---------- week strip ---------- */
 .week {
@@ -875,7 +861,8 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
 .rows th { padding: 0 0 8px; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-align: left; }
 .rows th.num, .rows td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rows td { padding: 9px 0; border-top: 1px solid var(--line); vertical-align: middle; }
-.rows td.name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rows td.name .nm { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.rows tfoot td { border-top: 1px solid var(--line-strong); font-weight: 500; }
 .row-sw { width: 12px; height: 12px; flex: none; border-radius: 2px; }
 .rows td.num { padding-left: 14px; }
 .rows td.pct { color: var(--muted); width: 48px; }
@@ -932,7 +919,6 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
   .date-row { padding-block: 12px 8px; }
   .day-num { font-size: 52px; }
   .day-name { font-size: 16px; }
-  .seal { width: 36px; height: 36px; font-size: 20px; }
   .week { padding-block: 4px 8px; }
   .wd-num { width: 30px; height: 30px; font-size: 16px; }
   .summary { padding-block: 8px 10px; }
@@ -986,7 +972,6 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
 
   <div class="date-row">
     <h1 class="date" id="dateTitle"><span class="day-num" id="dayNum"></span><span class="day-meta"><span class="day-name" id="weekday"></span><span class="day-month" id="monthYear"></span></span></h1>
-    <span class="seal" id="seal" aria-hidden="true"></span>
   </div>
 
   <nav class="week" id="week" aria-label="Week"></nav>
@@ -1131,6 +1116,20 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
       </div>
       <p class="set-note" id="sSync">Saved on this device</p>
     </section>
+    <section class="set-section">
+      <h3>Your data</h3>
+      <p class="set-note">Move your schedule to another device or another copy of this app, such as from claude.ai to your home-screen app: copy a backup on one, then restore it on the other.</p>
+      <div class="pills">
+        <button type="button" class="pill" id="sExport">Copy backup</button>
+        <button type="button" class="pill" id="sImportShow">Restore from backup</button>
+      </div>
+      <div class="field" id="sImportBox" hidden>
+        <label class="label" for="sImport" id="sImportLabel">Paste your backup</label>
+        <textarea class="input" id="sImport" rows="3" spellcheck="false" autocapitalize="off"></textarea>
+        <div class="pills" id="sImportActions"><button type="button" class="pill" id="sImportGo">Replace everything with this backup</button></div>
+        <p class="set-note" id="sImportMsg" hidden></p>
+      </div>
+    </section>
     </div>
     <div class="sheet-foot">
     <div class="sheet-actions">
@@ -1188,7 +1187,6 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
     ['personal', /\b(gym|workout|run|walk|family|shower|errands?|laundry|clean|rest|nap|friends)\b/i],
     ['work', /\b(work|meeting|call|client|deal|model|outreach|cim|loi|pitch|email|emails|crm|broker|valuation|internship|job)\b/i],
   ];
-  const KANJI_DAYS = ['日', '月', '火', '水', '木', '金', '土'];
   const DURATIONS = [15, 30, 45, 60, 90, 120, 180];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1220,7 +1218,7 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
 
   const $ = id => document.getElementById(id);
   const el = {
-    dateTitle: $('dateTitle'), dayNum: $('dayNum'), weekday: $('weekday'), monthYear: $('monthYear'), seal: $('seal'),
+    dateTitle: $('dateTitle'), dayNum: $('dayNum'), weekday: $('weekday'), monthYear: $('monthYear'),
     statsBtn: $('statsBtn'), pull: $('pull'), stats: $('stats'), statsBackdrop: $('statsBackdrop'), statsGrab: $('statsGrab'),
     statsClose: $('statsClose'), statsRange: $('statsRange'), statsBody: $('statsBody'), statsSub: $('statsSub'), tip: $('tip'), prevDay: $('prevDay'), nextDay: $('nextDay'),
     todayBtn: $('todayBtn'), settingsBtn: $('settingsBtn'), themeBtn: $('themeBtn'), newBtn: $('newBtn'), week: $('week'),
@@ -1240,6 +1238,8 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
     sMethod: $('sMethod'), sAsr: $('sAsr'), sPreview: $('sPreview'), sTypes: $('sTypes'),
     toast: $('toast'), toastMsg: $('toastMsg'), toastAction: $('toastAction'),
     fab: $('fab'), sTheme: $('sTheme'), sSync: $('sSync'),
+    sExport: $('sExport'), sImportShow: $('sImportShow'), sImportBox: $('sImportBox'), sImportLabel: $('sImportLabel'),
+    sImport: $('sImport'), sImportActions: $('sImportActions'), sImportGo: $('sImportGo'), sImportMsg: $('sImportMsg'),
   };
   const coarse = window.matchMedia ? matchMedia('(pointer: coarse)').matches : false;
 
@@ -1818,9 +1818,6 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
     el.dayNum.textContent = d.getDate();
     el.weekday.textContent = WEEKDAYS[d.getDay()];
     el.monthYear.textContent = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-    el.seal.textContent = KANJI_DAYS[d.getDay()];
-    el.seal.classList.toggle('today', isToday(d));
-    el.seal.title = `${WEEKDAYS[d.getDay()]} · ${KANJI_DAYS[d.getDay()]}曜日`;
     el.todayBtn.classList.toggle('is-today', isToday(d));
   }
 
@@ -2480,6 +2477,9 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
     setThemeChoice(theme);
     syncSettingsUI();
     el.setSheet.querySelector('.sheet-body').scrollTop = 0;
+    el.sImportBox.hidden = true;
+    el.sImport.value = '';
+    el.sImportMsg.hidden = true;
     el.setBackdrop.hidden = false;
     requestAnimationFrame(() => (coarse ? el.setClose : el.sSleepOn).focus({ preventScroll: true }));
   }
@@ -2519,21 +2519,77 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
   el.setBackdrop.addEventListener('pointerdown', e => { if (e.target === el.setBackdrop) closeSettings(); });
   el.setSheet.addEventListener('keydown', e => trapTab(el.setSheet, e));
 
+  // ---------- backup / restore ----------
+  function backupText() {
+    return JSON.stringify({ app: 'day-blocks', v: 2, exportedAt: new Date().toISOString(), days, routines, prayed, settings });
+  }
+  function showImportBox(mode, text) {
+    el.sImportBox.hidden = false;
+    el.sImportMsg.hidden = true;
+    el.sImportLabel.textContent = mode === 'copy' ? 'Your backup: select all and copy it' : 'Paste your backup';
+    el.sImportActions.hidden = mode === 'copy';
+    el.sImport.value = text || '';
+    el.sImport.focus();
+    if (mode === 'copy') el.sImport.select();
+  }
+  el.sExport.addEventListener('click', () => {
+    const text = backupText();
+    const fallback = () => showImportBox('copy', text);
+    try {
+      navigator.clipboard.writeText(text).then(() => showToast('Backup copied. Paste it into Restore on your other device.'), fallback);
+    } catch (_) { fallback(); }
+  });
+  el.sImportShow.addEventListener('click', () => showImportBox('paste', ''));
+  el.sImportGo.addEventListener('click', () => {
+    let data = null;
+    try { data = JSON.parse(el.sImport.value.trim()); } catch (_) {}
+    if (!data || data.app !== 'day-blocks') {
+      el.sImportMsg.hidden = false;
+      el.sImportMsg.textContent = 'That is not a Day Blocks backup. Copy it again from Settings → Your data → Copy backup.';
+      return;
+    }
+    const oldKeys = Object.keys(days);
+    days = cleanDays(data.days);
+    routines = cleanRoutines(data.routines);
+    prayed = cleanPrayed(data.prayed);
+    settings = cleanSettings(data.settings);
+    examples = null;
+    saveLocal();
+    new Set(oldKeys.concat(Object.keys(days))).forEach(pushRemote);
+    ['routines', 'prayed', 'settings'].forEach(pushRemote);
+    closeSettings();
+    render();
+    scrollToRelevant();
+    showToast(`Backup restored: ${plural(Object.keys(days).length, 'day', 'days')}, ${plural(routines.length, 'repeat', 'repeats')}`);
+  });
+
   // ---------- stats: what an average day is made of ----------
   const STAT_CATS = ['sleep', 'work', 'school', 'faith', 'food', 'personal', 'buffer', 'open'];
   const RANK = { faith: 6, school: 5, work: 4, food: 3, personal: 2, buffer: 1 };
-  const catName = c => (c === 'sleep' ? 'Sleep' : c === 'open' ? 'Open' : typeName(c));
+  const catName = c => (c === 'sleep' ? 'Sleep' : c === 'open' ? 'Unplanned' : typeName(c));
   const catClass = c => (c === 'sleep' ? 'k-sleep' : c === 'open' ? 'k-open' : 's-' + c);
   const fmtShort = d => `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}`;
   let statsOpen = false;
   let statsRange = '7';
 
-  // Every 5 minutes of a day gets one category: the highest-ranked block covering it, else sleep or open.
-  function daySlots(key) {
-    const SL = 5, N = DAY / SL;
+  // Your own blocks for a day, plus the prayers. A prayer whose start falls inside your sleep window is
+  // counted right after you wake (or just before bed), so it never eats into sleep.
+  function statBlocks(key) {
     const own = blocksFor(key).filter(b => !b.example && !b.prayer);
+    const sleep = sleepIntervals(), wake = settings.sleep.wake;
+    const prayers = prayerBlocks(key).map(pb => {
+      const zone = sleep.find(([a, z]) => pb.start >= a && pb.start < z);
+      if (!zone) return pb;
+      const start = zone[1] === wake ? zone[1] : Math.max(0, zone[0] - PRAYER_MIN);
+      return Object.assign({}, pb, { start, end: Math.min(DAY, start + PRAYER_MIN) });
+    });
+    return { own, prayers };
+  }
+  // Every 5 minutes of a day gets exactly one category: the highest-ranked block covering it, else sleep or unplanned.
+  function daySlots(own, prayers) {
+    const SL = 5, N = DAY / SL;
     const slots = new Array(N).fill(null);
-    for (const b of own.concat(prayerBlocks(key))) {
+    for (const b of own.concat(prayers)) {
       if (b.allDay) continue;
       for (let i = Math.floor(b.start / SL); i < Math.min(N, Math.ceil(b.end / SL)); i++) {
         const mid = i * SL + SL / 2;
@@ -2547,13 +2603,24 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
       const m = i * SL + SL / 2;
       slots[i] = sleep.some(([a, z]) => m >= a && m < z) ? 'sleep' : 'open';
     }
-    return { slots, own };
+    return slots;
+  }
+  // A day counts when you planned at least one timed block for it, or checked something off.
+  const isTracked = own => own.some(b => (!b.allDay && !b.routineId) || b.done);
+  // Round values to whole numbers that still add up to `total` (largest remainder).
+  function apportion(values, total) {
+    const keys = Object.keys(values);
+    const out = {};
+    let used = 0;
+    for (const k of keys) { out[k] = Math.floor(values[k]); used += out[k]; }
+    const byRemainder = keys.slice().sort((x, y) => (values[y] - out[y]) - (values[x] - out[x]));
+    for (let i = 0; i < total - used; i++) out[byRemainder[i % byRemainder.length]]++;
+    return out;
   }
   function earliestKey() {
     const keys = Object.keys(days).concat(routines.map(r => r.from), Object.keys(prayed)).filter(isKey).sort();
     return keys.length ? keys[0] : keyOf(new Date());
   }
-  // Averages cover planned days only (days with at least one of your own blocks), up to today.
   function computeStats(range) {
     const end = startOfDay(new Date());
     let start = range === 'all' ? parseKey(earliestKey()) : addDays(end, -(+range - 1));
@@ -2562,22 +2629,23 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
     const totals = Object.fromEntries(STAT_CATS.map(c => [c, 0]));
     const typical = Array.from({ length: 96 }, () => ({}));
     const todayKey = keyOf(end), n = nowMinutes();
-    let planned = 0, blocks = 0, done = 0, prayTotal = 0, prayDone = 0;
+    let tracked = 0, blocks = 0, done = 0, prayTotal = 0, prayDone = 0;
     for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
       const key = keyOf(d);
-      const { slots, own } = daySlots(key);
-      const isPlanned = own.length > 0;
-      if (isPlanned) {
-        planned++;
+      const { own, prayers } = statBlocks(key);
+      const counts = isTracked(own);
+      if (counts) {
+        tracked++;
+        const slots = daySlots(own, prayers);
         for (const c of slots) totals[c] += 5;
         for (let j = 0; j < 96; j++) { const c = slots[j * 3 + 1]; typical[j][c] = (typical[j][c] || 0) + 1; }
         for (const b of own) {
-          if (key === todayKey && !b.allDay && b.start > n) continue;
+          if (key === todayKey && !b.allDay && b.start > n) continue; // later today: not due yet
           blocks++;
           if (b.done) done++;
         }
       }
-      if (settings.prayer.on && (isPlanned || prayed[key])) {
+      if (settings.prayer.on && (counts || (prayed[key] || []).length)) {
         for (const pb of prayerBlocks(key)) {
           if (key === todayKey && pb.start > n) continue;
           prayTotal++;
@@ -2585,31 +2653,31 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
         }
       }
     }
-    return { start, end, planned, totals, typical, blocks, done, prayTotal, prayDone };
+    return { start, end, tracked, totals, typical, blocks, done, prayTotal, prayDone };
   }
 
   function renderStats() {
     const st = computeStats(statsRange);
     el.statsRange.querySelectorAll('.pill').forEach(pl => pl.setAttribute('aria-checked', pl.dataset.range === statsRange ? 'true' : 'false'));
     const span = st.start.getTime() === st.end.getTime() ? fmtShort(st.end) : `${fmtShort(st.start)} – ${fmtShort(st.end)}`;
-    if (!st.planned) {
+    if (!st.tracked) {
       el.statsSub.textContent = span;
-      el.statsBody.innerHTML = `<p class="st-empty">No planned days in this period yet.<br>Add blocks to your days and this page fills in.</p>`;
+      el.statsBody.innerHTML = `<p class="st-empty">No tracked days in this period yet.<br>A day counts once you plan a timed block for it or check something off.</p>`;
       return;
     }
-    el.statsSub.textContent = `${plural(st.planned, 'planned day', 'planned days')} · ${span}`;
-    const avg = Object.fromEntries(STAT_CATS.map(c => [c, Math.round(st.totals[c] / st.planned / 5) * 5]));
-    const biggest = STAT_CATS.reduce((m, c) => (avg[c] > avg[m] ? c : m), 'sleep');
-    avg[biggest] += DAY - STAT_CATS.reduce((sum, c) => sum + avg[c], 0);
+    el.statsSub.textContent = `Average of ${plural(st.tracked, 'tracked day', 'tracked days')} · ${span}`;
+    const avg = apportion(Object.fromEntries(STAT_CATS.map(c => [c, st.totals[c] / st.tracked])), DAY);
+    const share = apportion(Object.fromEntries(STAT_CATS.map(c => [c, (avg[c] / DAY) * 100])), 100);
     const present = STAT_CATS.filter(c => avg[c] > 0);
-    const pct = c => Math.round((avg[c] / DAY) * 100);
-    const tipFor = c => `${catName(c)} · ${fmtDur(avg[c])} · ${pct(c)}%`;
-    const order = present.filter(c => c !== 'open').sort((a, z) => avg[z] - avg[a]).concat(present.includes('open') ? ['open'] : []);
+    const tipFor = c => `${catName(c)} · ${fmtDur(avg[c])} · ${share[c]}%`;
+    const order = present.filter(c => c !== 'open').sort((x, y) => avg[y] - avg[x]).concat(present.includes('open') ? ['open'] : []);
     const ribbon = order.map(c => `<span class="${catClass(c)}" style="flex:${avg[c]}" data-tip="${esc(tipFor(c))}"></span>`).join('');
     const max = Math.max(...order.map(c => avg[c]));
     const rows = order.map(c =>
-      `<tr><td class="name"><span class="row-sw ${catClass(c)}"></span>${esc(catName(c))}</td><td class="num">${fmtDur(avg[c])}</td>` +
-      `<td class="num pct">${pct(c)}%</td><td class="barcell"><span class="row-bar ${catClass(c)}"><i style="width:${((avg[c] / max) * 100).toFixed(1)}%"></i></span></td></tr>`).join('');
+      `<tr><td class="name"><span class="nm"><span class="row-sw ${catClass(c)}"></span>${esc(catName(c))}</span></td><td class="num">${fmtDur(avg[c])}</td>` +
+      `<td class="num pct">${share[c]}%</td><td class="barcell"><span class="row-bar ${catClass(c)}"><i style="width:${((avg[c] / max) * 100).toFixed(1)}%"></i></span></td></tr>`).join('');
+    const total = order.reduce((sum, c) => sum + avg[c], 0);
+    const totalPct = order.reduce((sum, c) => sum + share[c], 0);
     const runs = [];
     st.typical.forEach((counts, j) => {
       let best = 'open', top = -1;
@@ -2627,11 +2695,14 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
       `<section class="st-sec"><h3>24 hours, on average</h3>` +
       `<div class="ribbon" role="img" aria-label="Average day: ${esc(order.map(tipFor).join(', '))}">${ribbon}</div>` +
       `<div class="axis" aria-hidden="true"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div></section>` +
-      `<section class="st-sec"><table class="rows"><thead><tr><th>Category</th><th class="num">Per day</th><th class="num pct">Share</th><th><span hidden>Bar</span></th></tr></thead><tbody>${rows}</tbody></table></section>` +
+      `<section class="st-sec"><table class="rows"><thead><tr><th>Category</th><th class="num">Per day</th><th class="num pct">Share</th><th><span hidden>Bar</span></th></tr></thead>` +
+      `<tbody>${rows}</tbody><tfoot><tr><td class="name">Total</td><td class="num">${fmtDur(total)}</td><td class="num pct">${totalPct}%</td><td></td></tr></tfoot></table></section>` +
       `<section class="st-sec"><h3>A typical day</h3><div class="strip" role="img" aria-label="Most common activity at each time of day">${strip}</div>` +
       `<div class="axis" aria-hidden="true"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span></div></section>` +
       `<section class="figs">${figs.join('')}</section>` +
-      `<p class="st-note">Sleep comes from your sleep schedule in Settings. Open is awake time with nothing planned. Where blocks overlap, prayer counts first, then school, work, food, personal and buffer.</p>`;
+      `<p class="st-note">A day counts once you plan a timed block for it or check something off; repeating blocks alone don't count a day. ` +
+      `Sleep comes from your sleep schedule in Settings, and a prayer that falls during sleep is counted right after you wake. ` +
+      `Unplanned is awake time with nothing on it. Where blocks overlap, each minute counts once: prayer first, then school, work, food, personal and buffer.</p>`;
   }
 
   function openStats() {
@@ -2680,7 +2751,7 @@ textarea.input { resize: vertical; min-height: 64px; line-height: 1.5; }
   el.statsBody.addEventListener('scroll', hideTip, { passive: true });
   el.statsBody.addEventListener('click', e => {
     const t = e.target.closest('[data-tip]');
-    if (!t) return;
+    if (!t) { hideTip(); return; }
     const r = t.getBoundingClientRect();
     showTip(t.dataset.tip, r.left + r.width / 2, r.top);
   });
